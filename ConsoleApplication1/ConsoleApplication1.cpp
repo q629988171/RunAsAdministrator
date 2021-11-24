@@ -13,10 +13,10 @@
  *  作者:Allen
  *  说明:判断当前用户是管理员组的成员
  *	
- *	参考:
- *	https://github.com/yoggy/open-command-for-Windows
- *	https://github.com/statiolake/open-windows
- *	https://luethje.eu/prog/runas_en.htm
+ *  参考:
+ *  https://github.com/yoggy/open-command-for-Windows
+ *  https://github.com/statiolake/open-windows
+ *  https://luethje.eu/prog/runas_en.htm
  ******************************************************************/
 
 // ConsoleApplication1.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
