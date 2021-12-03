@@ -9,10 +9,10 @@
  *  作者:Allen
  *  说明:指定程序请求管理员权限运行
  *
- *  修改日期:2021/11/22
+ *  修改日期:2021/12/03
  *  作者:Allen
  *  说明:判断当前用户是管理员组的成员
- *	
+ *
  *  参考:
  *  https://github.com/yoggy/open-command-for-Windows
  *  https://github.com/statiolake/open-windows
@@ -22,101 +22,116 @@
 // ConsoleApplication1.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
+// ReSharper disable CppClangTidyConcurrencyMtUnsafe
 #include <iostream>
-#include <windows.h>
-#include <Shlobj.h>
+#include <Windows.h>
+#include <ShlObj.h>
+
 
 /**
- *  功能描述:请求管理员权限运行程序
- *  @param 要打开的文件名称
- *  @return 成功返回true, 失败返回false.
+ * \brief 请求管理员权限运行程序
+ * \param filename 
+ * \return 成功返回true, 失败返回false.
  */
 bool open(LPCWSTR filename)
 {
-	HINSTANCE h;
-	LPCWSTR lpOperation = NULL;
+	LPCWSTR lpOperation = nullptr;
 
-	if (!IsUserAnAdmin()) lpOperation = L"runas";
-
-	h = ShellExecute(
-		NULL, 
-		lpOperation,
-		filename, 
-		NULL, 
-		NULL, 
-		SW_SHOW);
-	if ((int)h <= 32) {
-		return false;
+	if (!IsUserAnAdmin())
+	{
+		lpOperation = L"runas";
 	}
-	return true;
+
+	HINSTANCE h = ShellExecute(
+		nullptr,
+		lpOperation,
+		filename,
+		nullptr,
+		nullptr,
+		SW_SHOW
+	);
+
+	if (reinterpret_cast<int>(h) <= 32)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
+
 /**
- *  功能描述:显示使用说明
- *  @param 无
- *  @return 无
+ * \brief 显示使用说明
  */
 void usage()
 {
 	MessageBox(
-		NULL, 
-		L"Usage: RunAsAdmin.exe <filenames>", 
-		L"RunAsAdmin", 
-		MB_OK);
-	exit(1);
+		nullptr,
+		L"Usage: RunAsAdmin.exe <filenames>",
+		L"RunAsAdmin",
+		MB_OK
+	);
 }
+
 
 /**
- *  功能描述:显示错误信息
- *  @param 传递文件名称
- *  @return 无
+ * \brief 显示错误消息
+ * \param msg 
  */
-void error(LPCWSTR filename)
+void error(LPCWSTR msg)
 {
 	LPVOID lpMsgBuf;
-	TCHAR msg[MAX_PATH + 256];
-	
+	TCHAR lpText[MAX_PATH + 256];
+
 	FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
+		nullptr,
 		GetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
+		reinterpret_cast<LPTSTR>(&lpMsgBuf),
 		0,
-		NULL);
+		nullptr
+	);
 
 	swprintf_s(
-		msg, 
-		MAX_PATH + 256, 
-		L"无法打开文件 %s\r\n%s", 
-		filename, 
-		(LPCWSTR)lpMsgBuf);
+		lpText,
+		MAX_PATH + 256,
+		L"%s\r\n\r\n%s",
+		msg,
+		static_cast<LPCWSTR>(lpMsgBuf)
+	);
 
 	MessageBox(
-		NULL, 
-		msg,
-		L"Error", 
-		MB_OK | MB_ICONSTOP);
+		nullptr,
+		lpText,
+		L"RunAsAdmin",
+		MB_OK | MB_ICONSTOP
+	);
+
 	LocalFree(lpMsgBuf);
-	exit(1);
 }
 
-int wmain(int argc, wchar_t *argv[])
+int wmain(int argc, wchar_t* argv[])
 {
-	bool rv;
+	WCHAR erring[MAX_PATH] = L"无法打开文件: ";
 
-	if (argc == 1) usage();
+	if (argc == 1)
+	{
+		usage();
+	}
 
 
-	rv = open(argv[1]);
+	// ReSharper disable once CppLocalVariableMayBeConst
+	bool rv = open(argv[1]);
+
 	if (!rv)
 	{
-		error(argv[1]);
-		exit(1);
+		wcscat_s(erring, argv[1]);
+		error(erring);
+		return 1;
 	}
 	return 0;
 }
-
 
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
