@@ -9,7 +9,7 @@
  *  作者:Allen
  *  说明:指定程序请求管理员权限运行
  *
- *  修改日期:2021/12/03
+ *  修改日期:22/08/05
  *  作者:Allen
  *  说明:判断当前用户是管理员组的成员
  *
@@ -33,44 +33,41 @@
  * \param filename 
  * \return 成功返回true, 失败返回false.
  */
-bool open(LPCWSTR filename)
-{
-	LPCWSTR lpOperation = nullptr;
+bool open(LPCWSTR filename) {
+    LPCWSTR lpOperation = nullptr;
 
-	if (!IsUserAnAdmin())
-	{
-		lpOperation = L"runas";
-	}
+    if (!IsUserAnAdmin()) {
+        lpOperation = L"runas";
+    }
 
-	HINSTANCE h = ShellExecute(
-		nullptr,
-		lpOperation,
-		filename,
-		nullptr,
-		nullptr,
-		SW_SHOW
-	);
 
-	if (reinterpret_cast<int>(h) <= 32)
-	{
-		return FALSE;
-	}
+    HINSTANCE h = ShellExecute(
+            nullptr,
+            lpOperation,
+            filename,
+            nullptr,
+            nullptr,
+            SW_SHOW
+    );
 
-	return TRUE;
+    if (reinterpret_cast<int>(h) <= 32) {
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
 /**
  * \brief 显示使用说明
  */
-void usage()
-{
-	MessageBox(
-		nullptr,
-		L"Usage: RunAsAdmin.exe <filenames>",
-		L"RunAsAdmin",
-		MB_OK
-	);
+void usage() {
+    MessageBox(
+            nullptr,
+            L"Usage: RunAsAdmin.exe <filenames>",
+            L"RunAsAdmin",
+            MB_OK
+    );
 }
 
 
@@ -78,59 +75,56 @@ void usage()
  * \brief 显示错误消息
  * \param msg 
  */
-void error(LPCWSTR msg)
-{
-	LPVOID lpMsgBuf;
-	TCHAR lpText[MAX_PATH + 256];
+void error(LPCWSTR msg) {
+    LPVOID lpMsgBuf;
+    TCHAR lpText[MAX_PATH + 256];
 
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr,
-		GetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPTSTR>(&lpMsgBuf),
-		0,
-		nullptr
-	);
+    FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            GetLastError(),
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<LPTSTR>(&lpMsgBuf),
+            0,
+            nullptr
+    );
 
-	swprintf_s(
-		lpText,
-		MAX_PATH + 256,
-		L"%s\r\n\r\n%s",
-		msg,
-		static_cast<LPCWSTR>(lpMsgBuf)
-	);
+    swprintf_s(
+            lpText,
+            MAX_PATH + 256,
+            L"%s\r\n\r\n%s",
+            msg,
+            static_cast<LPCWSTR>(lpMsgBuf)
+    );
 
-	MessageBox(
-		nullptr,
-		lpText,
-		L"RunAsAdmin",
-		MB_OK | MB_ICONSTOP
-	);
+    MessageBox(
+            nullptr,
+            lpText,
+            L"RunAsAdmin",
+            MB_OK | MB_ICONSTOP
+    );
 
-	LocalFree(lpMsgBuf);
+    LocalFree(lpMsgBuf);
 }
 
-int wmain(int argc, wchar_t* argv[])
-{
-	WCHAR erring[MAX_PATH] = L"无法打开文件: ";
+int wmain(int argc, wchar_t *argv[]) {
+    WCHAR erring[MAX_PATH] = L"无法打开文件: ";
 
-	if (argc == 1)
-	{
-		usage();
-	}
-
-
-	// ReSharper disable once CppLocalVariableMayBeConst
-	bool rv = open(argv[1]);
-
-	if (!rv)
-	{
-		wcscat_s(erring, argv[1]);
-		error(erring);
+    if (argc == 1) {
+        usage();
 		return 1;
-	}
-	return 0;
+    }
+
+
+    // ReSharper disable once CppLocalVariableMayBeConst
+    bool rv = open(argv[1]);
+
+    if (!rv) {
+        wcscat_s(erring, argv[1]);
+        error(erring);
+        return 1;
+    }
+    return 0;
 }
 
 
